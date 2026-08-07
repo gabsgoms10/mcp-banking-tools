@@ -1,4 +1,4 @@
-name: Code Quality, Unit Tests & Container Publish
+name: Code Quality, Security & Container Publish
 
 on:
   push:
@@ -10,9 +10,9 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  # STAGE 1: CODE QUALITY LINTING, FORMATTING & UNIT TESTS
+  # STAGE 1: CODE QUALITY, SAST SECURITY & UNIT TESTS
   code-quality-and-test:
-    name: 1. Code Quality (Ruff, Black, Mypy) & Unit Tests (Pytest)
+    name: 1. Code Quality (Ruff, Black, Mypy), SAST Security (Bandit) & Unit Tests (Pytest)
     runs-on: ubuntu-latest
 
     steps:
@@ -44,6 +44,11 @@ jobs:
         run: |
           echo "📐 Checking static types with Mypy..."
           mypy src/
+
+      - name: Run Bandit SAST Security Scan
+        run: |
+          echo "🛡️ Running Bandit Static Application Security Testing (SAST)..."
+          bandit -r src/ -s B101,B106
 
       - name: Run Automated Unit Tests
         run: |
