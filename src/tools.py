@@ -12,7 +12,8 @@ def execute_get_account_balance(pix_key: str) -> dict[str, Any]:
     try:
         with get_db_cursor() as (_, cur):
             cur.execute(
-                "SELECT id, name, pix_key, balance_cents, risk_profile FROM characters WHERE pix_key = %s OR name ILIKE %s;",
+                "SELECT id, name, pix_key, balance_cents, risk_profile "
+                "FROM characters WHERE pix_key = %s OR name ILIKE %s;",
                 (pix_key, f"%{pix_key}%"),
             )
             account = cur.fetchone()
@@ -63,26 +64,35 @@ def execute_check_blocked_pix_key(pix_key: str) -> dict[str, Any]:
         return {"status": "error", "message": str(err)}
 
 
-def execute_transfer_pix(origin_pix_key: str, destination_pix_key: str, amount_cents: int) -> dict[str, Any]:
+def execute_transfer_pix(
+    origin_pix_key: str, destination_pix_key: str, amount_cents: int
+) -> dict[str, Any]:
     """Executes an instant PIX transfer between accounts using integer cents."""
     logger.info(
         f"Tool Invoked [transfer_pix]: {amount_cents} cents from '{origin_pix_key}' to '{destination_pix_key}'"
     )
     if amount_cents <= 0:
-        return {"status": "error", "message": "Transfer amount_cents must be strictly greater than zero"}
+        return {
+            "status": "error",
+            "message": "Transfer amount_cents must be strictly greater than zero",
+        }
 
     try:
         with get_db_cursor() as (conn, cur):
             # 1. Lock sender row for update
             cur.execute(
-                "SELECT id, name, balance_cents FROM characters WHERE pix_key = %s OR name ILIKE %s FOR UPDATE;",
+                "SELECT id, name, balance_cents FROM characters "
+                "WHERE pix_key = %s OR name ILIKE %s FOR UPDATE;",
                 (origin_pix_key, f"%{origin_pix_key}%"),
             )
             origin = cur.fetchone()
 
             if not origin:
                 conn.rollback()
-                return {"status": "error", "message": f"Sender account '{origin_pix_key}' not found"}
+                return {
+                    "status": "error",
+                    "message": f"Sender account '{origin_pix_key}' not found",
+                }
 
             if origin["balance_cents"] < amount_cents:
                 conn.rollback()
@@ -92,13 +102,22 @@ def execute_transfer_pix(origin_pix_key: str, destination_pix_key: str, amount_c
                 }
 
             # 2. Check BACEN Fraud Registry
-            cur.execute("SELECT reason FROM blocked_pix_keys WHERE pix_key = %s;", (destination_pix_key,))
+            cur.execute(
+                "SELECT reason FROM blocked_pix_keys WHERE pix_key = %s;",
+                (destination_pix_key,),
+            )
             blocked = cur.fetchone()
 
             if blocked:
                 cur.execute(
-                    "INSERT INTO transactions (origin_character_id, destination_key, amount_cents, status, decisive_rail, reason) VALUES (%s, %s, %s, 'BLOCKED', 'BACEN_FRAUD_LIST', %s);",
-                    (origin["id"], destination_pix_key, amount_cents, f"Blocked key: {blocked['reason']}"),
+                    "INSERT INTO transactions (origin_character_id, destination_key, amount_cents, status, decisive_rail, reason) "
+                    "VALUES (%s, %s, %s, 'BLOCKED', 'BACEN_FRAUD_LIST', %s);",
+                    (
+                        origin["id"],
+                        destination_pix_key,
+                        amount_cents,
+                        f"Blocked key: {blocked['reason']}",
+                    ),
                 )
                 conn.commit()
                 return {
@@ -117,7 +136,8 @@ def execute_transfer_pix(origin_pix_key: str, destination_pix_key: str, amount_c
             )
 
             cur.execute(
-                "INSERT INTO transactions (origin_character_id, destination_key, amount_cents, status, decisive_rail, reason) VALUES (%s, %s, %s, 'APPROVED', 'EXECUTION_RAIL', 'Transaction executed successfully');",
+                "INSERT INTO transactions (origin_character_id, destination_key, amount_cents, status, decisive_rail, reason) "
+                "VALUES (%s, %s, %s, 'APPROVED', 'EXECUTION_RAIL', 'Transaction executed successfully');",
                 (origin["id"], destination_pix_key, amount_cents),
             )
             conn.commit()
