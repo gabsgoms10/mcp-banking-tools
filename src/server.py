@@ -12,7 +12,8 @@ from src.tools import (
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("mcp-banking-tools.server")
 
-mcp = FastMCP("Banking-Tools", host=settings.server_host, port=settings.server_port)
+# FastMCP 1.2+ accepts only the server name in constructor
+mcp = FastMCP("Banking-Tools")
 
 
 @mcp.tool()
@@ -37,5 +38,5 @@ if __name__ == "__main__":
     logger.info(
         f"Starting FastMCP Banking Tools Server on {settings.server_host}:{settings.server_port} (SSE mode)..."
     )
-    # Explicitly pass host and port to mcp.run for Kubernetes pod networking (0.0.0.0:8001)
+    # Pass host and port directly to run method
     mcp.run(transport="sse", host=settings.server_host, port=settings.server_port)
