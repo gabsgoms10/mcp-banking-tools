@@ -1,6 +1,13 @@
+import os
 from unittest.mock import MagicMock, patch
 
-from src.tools import execute_get_account_balance, execute_transfer_pix
+# Set mandatory mock environment variables BEFORE importing src modules
+os.environ["POSTGRES_HOST"] = "localhost"
+os.environ["POSTGRES_DB"] = "guardrails_db"
+os.environ["POSTGRES_USER"] = "guardrails_user"
+os.environ["POSTGRES_PASSWORD"] = "test_pass"
+
+from src.tools import execute_get_account_balance, execute_transfer_pix  # noqa: E402
 
 
 @patch("src.tools.get_db_cursor")

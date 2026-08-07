@@ -2,13 +2,15 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Production configuration settings for FastMCP Banking Tools Server."""
+    """Production configuration settings for FastMCP Banking Tools Server.
+    Strict Security Policy: Mandatory environment variables — Zero hardcoded fallbacks.
+    """
 
-    postgres_host: str = "postgres-service.guardrails.svc.cluster.local"
+    postgres_host: str
     postgres_port: int = 5432
-    postgres_db: str = "guardrails_db"
-    postgres_user: str = "guardrails_user"
-    postgres_password: str = ""
+    postgres_db: str
+    postgres_user: str
+    postgres_password: str
 
     server_host: str = "0.0.0.0"
     server_port: int = 8001
