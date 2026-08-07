@@ -37,4 +37,5 @@ if __name__ == "__main__":
     logger.info(
         f"Starting FastMCP Banking Tools Server on {settings.server_host}:{settings.server_port} (SSE mode)..."
     )
-    mcp.run(transport="sse")
+    # Explicitly pass host and port to mcp.run for Kubernetes pod networking (0.0.0.0:8001)
+    mcp.run(transport="sse", host=settings.server_host, port=settings.server_port)
