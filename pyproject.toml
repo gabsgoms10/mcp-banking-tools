@@ -37,6 +37,7 @@ target-version = ['py311']
 [tool.mypy]
 python_version = "3.11"
 explicit_package_bases = true
+plugins = ["pydantic.mypy"]
 strict = false
 ignore_missing_imports = true
 
