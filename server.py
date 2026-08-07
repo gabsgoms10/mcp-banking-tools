@@ -172,6 +172,58 @@ def transfer_pix(origin_pix_key: str, destination_pix_key: str, amount_cents: in
         logger.error(f"[MCP Tool Error] transfer_pix transaction aborted: {str(e)}")
         return {"status": "error", "message": str(e)}
 
+@mcp.tool()
+def search_bacen_regulations(query: str) -> dict:
+    """
+    Performs an Agentic RAG search over Central Bank (BACEN) regulations, PIX night transfer limits, and MED fraud policies.
+    
+    Args:
+        query: Search prompt or question regarding financial rules (e.g. 'limite noturno', 'MED', 'devolucao').
+    """
+    logger.info(f"[MCP Tool] Executing Agentic RAG search for query: '{query}'")
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT resolution_code, title, category, content
+                FROM bacen_regulations
+                WHERE title ILIKE %s OR content ILIKE %s OR %s = ANY(keywords)
+                ORDER BY created_at DESC;
+                """,
+                (f"%{query}%", f"%{query}%", query.lower())
+            )
+            results = cur.fetchall()
+        conn.close()
+
+        if results:
+            formatted_results = [
+                {
+                    "resolution_code": r["resolution_code"],
+                    "title": r["title"],
+                    "category": r["category"],
+                    "content": r["content"]
+                }
+                for r in results
+            ]
+            return {
+                "status": "success",
+                "query": query,
+                "match_count": len(formatted_results),
+                "regulations": formatted_results
+            }
+
+        return {
+            "status": "success",
+            "query": query,
+            "match_count": 0,
+            "regulations": [],
+            "message": f"No specific BACEN regulation matched query '{query}'. Standard operating procedures apply."
+        }
+    except Exception as e:
+        logger.error(f"[MCP Tool Error] search_bacen_regulations failed: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
 if __name__ == "__main__":
     logger.info("Starting FastMCP Banking Tools Server on port 8001 (SSE mode)...")
     mcp.run(transport="sse")
