@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, patch
-from src.tools import execute_get_account_balance, execute_check_blocked_pix_key, execute_transfer_pix
+
+from src.tools import execute_get_account_balance, execute_transfer_pix
 
 
 @patch("src.tools.get_db_cursor")

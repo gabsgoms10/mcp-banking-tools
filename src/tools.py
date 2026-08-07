@@ -1,11 +1,12 @@
 import logging
-from typing import Any, Dict
+from typing import Any
+
 from src.db import get_db_cursor
 
 logger = logging.getLogger("mcp-banking-tools.tools")
 
 
-def execute_get_account_balance(pix_key: str) -> Dict[str, Any]:
+def execute_get_account_balance(pix_key: str) -> dict[str, Any]:
     """Retrieves account details and balance for a given PIX key or character name."""
     logger.info(f"Tool Invoked [get_account_balance]: key='{pix_key}'")
     try:
@@ -32,7 +33,7 @@ def execute_get_account_balance(pix_key: str) -> Dict[str, Any]:
         return {"status": "error", "message": str(err)}
 
 
-def execute_check_blocked_pix_key(pix_key: str) -> Dict[str, Any]:
+def execute_check_blocked_pix_key(pix_key: str) -> dict[str, Any]:
     """Checks if a PIX key exists in the BACEN fraud registry (blocked_pix_keys)."""
     logger.info(f"Tool Invoked [check_blocked_pix_key]: key='{pix_key}'")
     try:
@@ -62,9 +63,11 @@ def execute_check_blocked_pix_key(pix_key: str) -> Dict[str, Any]:
         return {"status": "error", "message": str(err)}
 
 
-def execute_transfer_pix(origin_pix_key: str, destination_pix_key: str, amount_cents: int) -> Dict[str, Any]:
+def execute_transfer_pix(origin_pix_key: str, destination_pix_key: str, amount_cents: int) -> dict[str, Any]:
     """Executes an instant PIX transfer between accounts using integer cents."""
-    logger.info(f"Tool Invoked [transfer_pix]: {amount_cents} cents from '{origin_pix_key}' to '{destination_pix_key}'")
+    logger.info(
+        f"Tool Invoked [transfer_pix]: {amount_cents} cents from '{origin_pix_key}' to '{destination_pix_key}'"
+    )
     if amount_cents <= 0:
         return {"status": "error", "message": "Transfer amount_cents must be strictly greater than zero"}
 
@@ -104,8 +107,14 @@ def execute_transfer_pix(origin_pix_key: str, destination_pix_key: str, amount_c
                 }
 
             # 3. Perform atomic transfer
-            cur.execute("UPDATE characters SET balance_cents = balance_cents - %s WHERE id = %s;", (amount_cents, origin["id"]))
-            cur.execute("UPDATE characters SET balance_cents = balance_cents + %s WHERE pix_key = %s;", (amount_cents, destination_pix_key))
+            cur.execute(
+                "UPDATE characters SET balance_cents = balance_cents - %s WHERE id = %s;",
+                (amount_cents, origin["id"]),
+            )
+            cur.execute(
+                "UPDATE characters SET balance_cents = balance_cents + %s WHERE pix_key = %s;",
+                (amount_cents, destination_pix_key),
+            )
 
             cur.execute(
                 "INSERT INTO transactions (origin_character_id, destination_key, amount_cents, status, decisive_rail, reason) VALUES (%s, %s, %s, 'APPROVED', 'EXECUTION_RAIL', 'Transaction executed successfully');",

@@ -1,9 +1,10 @@
+from collections.abc import Generator
+from contextlib import contextmanager
 import logging
-import psycopg2
+from typing import Any
+
 from psycopg2.extras import RealDictCursor
 from psycopg2.pool import ThreadedConnectionPool
-from contextlib import contextmanager
-from typing import Generator
 from src.config import settings
 
 logger = logging.getLogger("mcp-banking-tools.db")
@@ -15,7 +16,9 @@ def init_db_pool() -> ThreadedConnectionPool:
     """Initializes a thread-safe connection pool for PostgreSQL."""
     global _pool
     if _pool is None or _pool.closed:
-        logger.info(f"Initializing PostgreSQL connection pool to {settings.postgres_host}:{settings.postgres_port}")
+        logger.info(
+            f"Initializing PostgreSQL connection pool to {settings.postgres_host}:{settings.postgres_port}"
+        )
         _pool = ThreadedConnectionPool(
             minconn=1,
             maxconn=10,
@@ -30,7 +33,7 @@ def init_db_pool() -> ThreadedConnectionPool:
 
 
 @contextmanager
-def get_db_cursor() -> Generator:
+def get_db_cursor() -> Generator[tuple[Any, Any], None, None]:
     """Context manager acquiring and releasing a connection from the pool safely."""
     pool = init_db_pool()
     conn = pool.getconn()

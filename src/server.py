@@ -1,7 +1,12 @@
 import logging
+
 from fastmcp import FastMCP
 from src.config import settings
-from src.tools import execute_get_account_balance, execute_check_blocked_pix_key, execute_transfer_pix
+from src.tools import (
+    execute_check_blocked_pix_key,
+    execute_get_account_balance,
+    execute_transfer_pix,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("mcp-banking-tools.server")
@@ -28,5 +33,7 @@ def transfer_pix(origin_pix_key: str, destination_pix_key: str, amount_cents: in
 
 
 if __name__ == "__main__":
-    logger.info(f"Starting FastMCP Banking Tools Server on {settings.server_host}:{settings.server_port} (SSE mode)...")
+    logger.info(
+        f"Starting FastMCP Banking Tools Server on {settings.server_host}:{settings.server_port} (SSE mode)..."
+    )
     mcp.run(transport="sse")
