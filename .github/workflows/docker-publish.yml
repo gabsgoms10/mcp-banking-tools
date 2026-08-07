@@ -1,4 +1,4 @@
-name: Build & Publish FastMCP Server Image to GHCR
+name: Code Quality, Unit Tests & Container Publish
 
 on:
   push:
@@ -10,8 +10,50 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  # STAGE 1: CODE QUALITY LINTING, FORMATTING & UNIT TESTS
+  code-quality-and-test:
+    name: 1. Code Quality (Ruff, Black, Mypy) & Unit Tests (Pytest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Dependencies & Quality Tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Ruff Linter
+        run: |
+          echo "🔍 Running Ruff linter..."
+          ruff check src/ tests/
+
+      - name: Run Black Code Formatter Check
+        run: |
+          echo "🎨 Checking code formatting with Black..."
+          black --check src/ tests/
+
+      - name: Run Mypy Type Checker
+        run: |
+          echo "📐 Checking static types with Mypy..."
+          mypy src/
+
+      - name: Run Automated Unit Tests
+        run: |
+          echo "🧪 Running Pytest unit test suite..."
+          pytest -v tests/
+
+  # STAGE 2: BUILD & PUBLISH DOCKER IMAGE TO GHCR (ONLY RUNS IF STAGE 1 SUCCEEDS)
   build-and-push:
-    name: Build & Push Docker Image to GitHub Container Registry
+    name: 2. Build & Push Docker Image to GHCR
+    needs: code-quality-and-test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -21,7 +63,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up QEMU for Multi-Arch Builds (ARM64 & x86_64)
+      - name: Set up QEMU for Multi-Arch Builds
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx

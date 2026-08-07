@@ -12,9 +12,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application source code
-COPY server.py .
+# Copy application source code & project configuration
+COPY pyproject.toml .
+COPY src/ src/
 
 EXPOSE 8001
 
-CMD ["python", "server.py"]
+CMD ["python", "-m", "src.server"]

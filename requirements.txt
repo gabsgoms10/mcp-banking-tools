@@ -1,5 +1,11 @@
-mcp[cli]>=1.2.0
+mcp>=1.2.0
 fastmcp>=0.4.0
 psycopg2-binary>=2.9.9
 pydantic>=2.7.0
+pydantic-settings>=2.2.1
 uvicorn>=0.30.0
+ruff>=0.4.0
+black>=24.4.0
+mypy>=1.10.0
+pytest>=8.2.0
+pytest-mock>=3.14.0
