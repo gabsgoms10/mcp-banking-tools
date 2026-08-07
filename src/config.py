@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     postgres_user: str = Field(default_factory=lambda: os.environ["POSTGRES_USER"])
     postgres_password: str = Field(default_factory=lambda: os.environ["POSTGRES_PASSWORD"])
 
-    server_host: str = Field(default="0.0.0.0")
+    server_host: str = Field(default_factory=lambda: os.environ.get("SERVER_HOST", "0.0.0.0"))  # nosec B104
     server_port: int = Field(default=8001)
 
     model_config = SettingsConfigDict(

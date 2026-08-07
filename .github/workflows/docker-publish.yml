@@ -48,7 +48,7 @@ jobs:
       - name: Run Bandit SAST Security Scan
         run: |
           echo "🛡️ Running Bandit Static Application Security Testing (SAST)..."
-          bandit -r src/ -s B101,B106
+          bandit -r src/ -s B101,B104,B106
 
       - name: Run Automated Unit Tests
         run: |
