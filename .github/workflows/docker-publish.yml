@@ -55,9 +55,9 @@ jobs:
           echo "🧪 Running Pytest unit test suite..."
           pytest -v tests/
 
-  # STAGE 2: BUILD & PUBLISH DOCKER IMAGE TO GHCR (ONLY RUNS IF STAGE 1 SUCCEEDS)
+  # STAGE 2: BUILD & PUBLISH DOCKER IMAGE TO GHCR WITH GHA LAYER CACHING
   build-and-push:
-    name: 2. Build & Push Docker Image to GHCR
+    name: 2. Build & Push Docker Image to GHCR (with GHA Caching)
     needs: code-quality-and-test
     runs-on: ubuntu-latest
     permissions:
@@ -81,7 +81,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract Docker Metadata
+      - name: Extract Docker Metadata & OCI Annotations
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -90,7 +90,7 @@ jobs:
             type=raw,value=latest
             type=sha,format=short
 
-      - name: Build and Push Docker Image
+      - name: Build and Push Docker Image (with GitHub Actions Layer Cache)
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -98,3 +98,5 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
