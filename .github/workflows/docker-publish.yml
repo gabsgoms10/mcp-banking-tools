@@ -43,7 +43,7 @@ jobs:
       - name: Run Mypy Type Checker
         run: |
           echo "📐 Checking static types with Mypy..."
-          mypy src/
+          mypy src/ --explicit-package-bases
 
       - name: Run Bandit SAST Security Scan
         run: |

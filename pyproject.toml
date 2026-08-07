@@ -20,6 +20,7 @@ dev = [
     "ruff>=0.4.0",
     "black>=24.4.0",
     "mypy>=1.10.0",
+    "bandit>=1.7.8",
 ]
 
 [tool.ruff]
@@ -35,6 +36,7 @@ target-version = ['py311']
 
 [tool.mypy]
 python_version = "3.11"
+explicit_package_bases = true
 strict = false
 ignore_missing_imports = true
 
