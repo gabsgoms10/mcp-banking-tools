@@ -1,6 +1,7 @@
 import logging
 
 from fastmcp import FastMCP
+
 from src.config import settings
 from src.tools import (
     execute_check_blocked_pix_key,

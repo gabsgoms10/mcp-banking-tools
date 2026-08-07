@@ -1,10 +1,11 @@
+import logging
 from collections.abc import Generator
 from contextlib import contextmanager
-import logging
 from typing import Any
 
 from psycopg2.extras import RealDictCursor
 from psycopg2.pool import ThreadedConnectionPool
+
 from src.config import settings
 
 logger = logging.getLogger("mcp-banking-tools.db")
